@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime/debug"
 	"sync"
 	"time"
 
@@ -517,6 +518,8 @@ func (item *Item) Open(o fs.Object) (err error) {
 // which implies we are about to create the file
 func (item *Item) open(o fs.Object) (err error) {
 	// defer log.Trace(o, "item=%p", item)("err=%v", &err)
+	fmt.Printf("item open fs.Object, name:%s\n", o.String())
+	fmt.Printf("debug stack :%s\n ", string(debug.Stack()))
 	item.mu.Lock()
 	defer item.mu.Unlock()
 

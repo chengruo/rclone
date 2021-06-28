@@ -15,6 +15,7 @@ import (
 	"net/url"
 	"path"
 	"regexp"
+	"runtime/debug"
 	"sort"
 	"strconv"
 	"strings"
@@ -1626,10 +1627,13 @@ func (f *Fs) setRoot(root string) {
 func NewFs(ctx context.Context, name, root string, m configmap.Mapper) (fs.Fs, error) {
 	// Parse config into Options struct
 	opt := new(Options)
+	//fmt.Printf("timetsamp: %d; \t s3 new fs stack:%s\n", time.Now().Unix(), string(debug.Stack()))
 	err := configstruct.Set(m, opt)
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Printf("s3 options: %+v\n", opt)
 	err = checkUploadChunkSize(opt.ChunkSize)
 	if err != nil {
 		return nil, errors.Wrap(err, "s3: chunk size")
@@ -1997,6 +2001,7 @@ func (f *Fs) listDir(ctx context.Context, bucket, directory, prefix string, addB
 	}
 	// bucket must be present if listing succeeded
 	f.cache.MarkOK(bucket)
+	fmt.Printf("s3 list dir entries:%+v\n", entries)
 	return entries, nil
 }
 
@@ -2030,6 +2035,8 @@ func (f *Fs) listBuckets(ctx context.Context) (entries fs.DirEntries, err error)
 // This should return ErrDirNotFound if the directory isn't
 // found.
 func (f *Fs) List(ctx context.Context, dir string) (entries fs.DirEntries, err error) {
+	fmt.Printf("s3 list dir: %s, timestamp:%d \n", dir, time.Now().Unix())
+	fmt.Printf("stack: %s\n", debug.Stack())
 	bucket, directory := f.split(dir)
 	if bucket == "" {
 		if directory != "" {

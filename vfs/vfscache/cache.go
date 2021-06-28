@@ -8,6 +8,7 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
+	"runtime/debug"
 	"sort"
 	"strings"
 	"sync"
@@ -61,7 +62,7 @@ type Cache struct {
 
 }
 
-// AddVirtualFn if registered by the WithAddVirtual method, can be
+// AddVirtualFn if registered by the WithAddVirtual metho	d, can be
 // called to register the object or directory at remote as a virtual
 // entry in directory listings.
 //
@@ -74,6 +75,8 @@ type AddVirtualFn func(remote string, size int64, isDir bool) error
 // This starts background goroutines which can be cancelled with the
 // context passed in.
 func New(ctx context.Context, fremote fs.Fs, opt *vfscommon.Options, avFn AddVirtualFn) (*Cache, error) {
+
+	fmt.Printf("new cache, opt:%+v\n", opt)
 	fName := fremote.Name()
 	fRoot := filepath.FromSlash(fremote.Root())
 	if runtime.GOOS == "windows" {
@@ -104,6 +107,11 @@ func New(ctx context.Context, fremote fs.Fs, opt *vfscommon.Options, avFn AddVir
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create cache meta remote")
 	}
+
+	fmt.Printf("fname: %s\n", fName)
+	fmt.Printf("froot: %s\n", fRoot)
+	fmt.Printf("cacheDir: %s\n", root)
+	fmt.Printf("metaRoot: %s\n", metaRoot)
 
 	hashType, hashOption := operations.CommonHash(ctx, fcache, fremote)
 
@@ -211,6 +219,8 @@ func (c *Cache) _get(name string) (item *Item, found bool) {
 //
 // name should be a remote path not an osPath
 func (c *Cache) put(name string, item *Item) (oldItem *Item) {
+	fmt.Printf("cache put item, name:%s\n", name)
+	fmt.Printf("debug stack:%s\n", string(debug.Stack()))
 	name = clean(name)
 	c.mu.Lock()
 	oldItem = c.item[name]
@@ -657,6 +667,12 @@ func (c *Cache) purgeOverQuota(quota int64) {
 	}
 }
 
+func (c*Cache) DebugPrintItem() {
+	for key, item := range c.item {
+		fmt.Printf("key: %s\t item:%+v\n", key, item)
+	}
+}
+
 // clean empties the cache of stuff if it can
 func (c *Cache) clean(removeCleanFiles bool) {
 	// Cache may be empty so end
@@ -664,6 +680,8 @@ func (c *Cache) clean(removeCleanFiles bool) {
 	if os.IsNotExist(err) {
 		return
 	}
+
+	fmt.Println(c.Dump())
 	c.updateUsed()
 	c.mu.Lock()
 	oldItems, oldUsed := len(c.item), fs.SizeSuffix(c.used)
@@ -716,6 +734,7 @@ func (c *Cache) clean(removeCleanFiles bool) {
 	stats := fmt.Sprintf("objects %d (was %d) in use %d, to upload %d, uploading %d, total size %v (was %v)",
 		newItems, oldItems, totalInUse, uploadsQueued, uploadsInProgress, newUsed, oldUsed)
 	fs.Infof(nil, "vfs cache: cleaned: %s", stats)
+	fmt.Printf("vfs cache: cleaned: %s\n", stats)
 	if err = sysdnotify.Status(fmt.Sprintf("[%s] vfs cache: %s", time.Now().Format("15:04"), stats)); err != nil {
 		fs.Errorf(nil, "vfs cache: updating systemd status with current stats failed: %s", err)
 	}

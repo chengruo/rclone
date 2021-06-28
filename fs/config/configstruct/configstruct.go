@@ -122,6 +122,7 @@ func Set(config configmap.Getter, opt interface{}) (err error) {
 			}
 		}
 		defStruct.Field(defaultItem.Num).Set(reflect.ValueOf(newValue))
+		fmt.Printf("defaultItem key: %+v, value:%+v\n", defaultItem, newValue)
 	}
 	return nil
 }

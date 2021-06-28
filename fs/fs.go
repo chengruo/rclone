@@ -1212,6 +1212,7 @@ func ParseRemote(path string) (fsInfo *RegInfo, configName, fsPath string, conne
 	if err != nil {
 		return nil, "", "", nil, err
 	}
+	fmt.Printf("parse remote: %+v\n", parsed)
 	configName, fsPath = parsed.Name, parsed.Path
 	var fsName string
 	var ok bool
@@ -1230,6 +1231,7 @@ func ParseRemote(path string) (fsInfo *RegInfo, configName, fsPath string, conne
 		configName = "local"
 	}
 	fsInfo, err = Find(fsName)
+	fmt.Printf("parse remote, path:%s, fsName:%s\n", path, fsName)
 	return fsInfo, configName, fsPath, parsed.Config, err
 }
 
