@@ -2,6 +2,7 @@ package vfs
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path"
 	"sync"
@@ -51,6 +52,10 @@ type File struct {
 	sys              atomic.Value                    // user defined info to be attached here
 
 	muRW sync.Mutex // synchronize RWFileHandle.openPending(), RWFileHandle.close() and File.Remove
+}
+
+func (f *File) DebugInfo(){
+	fmt.Printf("inode: %d\t size:%d\t dPath:%s\n", f.inode, f.size, f.Path())
 }
 
 // newFile creates a new File
@@ -663,6 +668,7 @@ func (f *File) Open(flags int) (fd Handle, err error) {
 		rdwrMode = flags & accessModeMask
 	)
 
+	//f.DebugInfo()
 	// http://pubs.opengroup.org/onlinepubs/7908799/xsh/open.html
 	// The result of using O_TRUNC with O_RDONLY is undefined.
 	// Linux seems to truncate the file, but we prefer to return EINVAL

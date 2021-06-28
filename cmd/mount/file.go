@@ -4,6 +4,7 @@ package mount
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"bazil.org/fuse"
@@ -46,6 +47,7 @@ var _ fusefs.NodeSetattrer = (*File)(nil)
 // Setattr handles attribute changes from FUSE. Currently supports ModTime and Size only
 func (f *File) Setattr(ctx context.Context, req *fuse.SetattrRequest, resp *fuse.SetattrResponse) (err error) {
 	defer log.Trace(f, "a=%+v", req)("err=%v", &err)
+	fmt.Printf("")
 	if !f.VFS().Opt.NoModTime {
 		if req.Valid.Mtime() {
 			err = f.File.SetModTime(req.Mtime)
@@ -78,6 +80,7 @@ func (f *File) Open(ctx context.Context, req *fuse.OpenRequest, resp *fuse.OpenR
 		resp.Flags |= fuse.OpenDirectIO
 	}
 
+	fmt.Printf("recv open request, req: %+v, resp:%+v\n", req, resp)
 	return &FileHandle{handle}, nil
 }
 

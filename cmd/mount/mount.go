@@ -5,14 +5,13 @@
 package mount
 
 import (
-	"fmt"
-	"runtime"
-
 	"bazil.org/fuse"
 	fusefs "bazil.org/fuse/fs"
+	"fmt"
 	"github.com/rclone/rclone/cmd/mountlib"
 	"github.com/rclone/rclone/fs"
 	"github.com/rclone/rclone/vfs"
+	"runtime"
 )
 
 func init() {
@@ -85,6 +84,9 @@ func mount(VFS *vfs.VFS, mountpoint string, opt *mountlib.Options) (<-chan error
 
 	f := VFS.Fs()
 	fs.Debugf(f, "Mounting on %q", mountpoint)
+	fmt.Printf("mounting on %+v\n", mountpoint)
+	fmt.Printf("vfs: %+v\n", VFS)
+	//fmt.Printf("stack: %s\n", string(debug.Stack()))
 	c, err := fuse.Mount(mountpoint, mountOptions(VFS, f.Name()+":"+f.Root(), opt)...)
 	if err != nil {
 		return nil, nil, err

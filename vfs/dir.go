@@ -797,6 +797,7 @@ func (d *Dir) cachedNode(relativePath string) Node {
 // Stat need not to handle the names "." and "..".
 func (d *Dir) Stat(name string) (node Node, err error) {
 	// fs.Debugf(path, "Dir.Stat")
+
 	node, err = d.stat(name)
 	if err != nil {
 		if err != ENOENT {
